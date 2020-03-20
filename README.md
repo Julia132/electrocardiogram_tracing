@@ -1,1 +1,1 @@
-# electrocardiogram_tracing
+# Electrocardiogram tracing
