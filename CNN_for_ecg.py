@@ -17,7 +17,7 @@ from keras.optimizers import Adam
 from os.path import join, isfile
 from os import listdir
 
-path_to_data = 'for_CNN'
+path_to_data = 'for_CNN/all'
 
 
 def get_optimal_threshold(prediction, testY):
@@ -40,9 +40,11 @@ def get_optimal_threshold(prediction, testY):
 
 def get_data(path):
 
-    matrix_image = []
+    m = []
 
     for patient in listdir(path):
+
+        matrix_image = []
 
         for filename in [f for f in listdir(join(path, patient)) if isfile(join(path, patient, f))]:
 
@@ -56,19 +58,25 @@ def get_data(path):
 
             matrix_image.append(image)
 
-    return matrix_image
+        matrix_output = np.stack([x for l in matrix_image for x in l])
+
+        matrix_output = [([x for l in matrix_output for x in l])]
+
+        m.append(matrix_output[0])
+
+    return m
 
 
 def model(data):
 
-    # y = [0]*8 + [1]*4
-    y = [0] * 96 + [1] * 48
+    y = [0]*14 + [1]*11
+    # y = [0] * 168 + [1] * 132
 
     trainX, testX, trainY, testY = train_test_split(data, y, test_size=0.25, random_state=100)
 
     model = keras.models.Sequential()
 
-    model.add(Conv2D(32, (3, 3),  padding='same', input_shape=(64, 64, 1)))
+    model.add(Conv2D(32, (3, 3),  padding='same', input_shape=(64, 64, 12)))
     model.add(Activation('relu'))
 
     model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid'))
@@ -113,10 +121,18 @@ def model(data):
 
     model.compile(optimizer=Adam(lr=1e-4), loss=keras.losses.binary_crossentropy, metrics=['accuracy'])
 
-    EPOCHS = 150
+    EPOCHS = 20
 
     trainX = np.expand_dims(np.array(trainX), axis=3)
     testX = np.expand_dims(np.array(testX), axis=3)
+
+    print(trainX.shape)
+
+    n_samples, num, chanel = trainX.shape
+    trainX = trainX.reshape((n_samples, num // (12*64), num // (12*64), num // (64**2)))
+
+    n_samples, num, chanel = testX.shape
+    testX = testX.reshape((n_samples, num // (12*64), num // (12*64), num // (64**2)))
 
     print(testY)
 
@@ -188,8 +204,8 @@ def draw_loss(EPOCHS, H):
 
 
 def main():
-    matrix_image = get_data(path_to_data)
-    model(matrix_image)
+    matrix_output = get_data(path_to_data)
+    model(matrix_output)
 
 
 if __name__ == '__main__':

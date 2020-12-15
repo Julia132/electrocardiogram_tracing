@@ -77,6 +77,7 @@ def resamples(data, filtered, sample_rate):
     resampled_data = resample(data, len(filtered))
     #scale_data - функция, которая масштабирует передаваемые данные так, чтобы они указали границы
     #в любом другом исполнении не работает
+    print(hp.scale_data(resampled_data))
     wd, m = hp.process(hp.scale_data(resampled_data), sample_rate * 2)
     # plt.figure(figsize=(12, 4))
     # hp.plotter(wd, m)
